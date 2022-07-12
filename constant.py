@@ -5,8 +5,10 @@ from struct import pack
 
 ConstantIndex = int
 
+
 class Constant(abc.ABC):
     entries = 1
+
     @abc.abstractproperty
     def b(self) -> bytes:
         pass
@@ -132,6 +134,7 @@ class DefaultDict(UserDict):
     def __init__(self, default_factory):
         super().__init__()
         self.default_factory = default_factory
+
     def __missing__(self, key):
         value = self.default_factory(key)
         self[key] = value
@@ -154,7 +157,7 @@ class ConstPool:
 
     def __iter__(self) -> int:
         yield from self.constants
-    
+
     def _add_constant(self, constant: Constant) -> ConstantIndex:
         self.constants.append(constant)
         self.idx += constant.entries
@@ -168,12 +171,18 @@ class ConstPool:
 
     def _add_class(self, class_name: str) -> ConstantIndex:
         return self._add_constant(ClassInfo(self.utf[class_name]))
-    
+
     def _add_nametype(self, nametype: tuple[str, str]) -> ConstantIndex:
-        return self._add_constant(NameAndTypeInfo(self.utf[nametype[0]], self.utf[nametype[1]]))
+        return self._add_constant(
+            NameAndTypeInfo(self.utf[nametype[0]], self.utf[nametype[1]])
+        )
 
     def _add_method_ref(self, params: tuple[str, str, str]) -> ConstantIndex:
-        return self._add_constant(MethodRefInfo(self.class_[params[0]], self.nametype[params[1], params[2]]))
+        return self._add_constant(
+            MethodRefInfo(self.class_[params[0]], self.nametype[params[1], params[2]])
+        )
 
     def _add_field_ref(self, params: tuple[str, str, str]) -> ConstantIndex:
-        return self._add_constant(FieldRefInfo(self.class_[params[0]], self.nametype[params[1], params[2]]))
+        return self._add_constant(
+            FieldRefInfo(self.class_[params[0]], self.nametype[params[1], params[2]])
+        )

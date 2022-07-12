@@ -3,10 +3,6 @@ from struct import pack
 from pathlib import Path
 from constant import (
     ConstPool,
-    MethodRefInfo,
-    NameAndTypeInfo,
-    StringInfo,
-    FieldRefInfo,
 )
 from class_file import ClassFile, MethodInfo, CodeAttribute
 
@@ -30,14 +26,26 @@ my_class = ClassFile(
                     max_locals=1,
                     code=(
                         b"\xb2"
-                        + pack(">H", pool.field_ref["java/lang/System", "out", "Ljava/io/PrintStream;"])
+                        + pack(
+                            ">H",
+                            pool.field_ref[
+                                "java/lang/System", "out", "Ljava/io/PrintStream;"
+                            ],
+                        )
                         + b"\x12"
                         + pack(">B", pool.str[sys.argv[1]])
                         + b"\xb6"
-                        + pack(">H", pool.method_ref["java/io/PrintStream", "println", "(Ljava/lang/String;)V"])
+                        + pack(
+                            ">H",
+                            pool.method_ref[
+                                "java/io/PrintStream",
+                                "println",
+                                "(Ljava/lang/String;)V",
+                            ],
+                        )
                         + b"\xb1"
                     ),
-                    name_idx=pool.utf['Code'],
+                    name_idx=pool.utf["Code"],
                 )
             ],
         )
