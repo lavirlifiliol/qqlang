@@ -2,7 +2,7 @@ import sys
 from struct import pack
 from pathlib import Path
 from constant import (
-    ConstBuilder,
+    ConstPool,
     MethodRefInfo,
     NameAndTypeInfo,
     StringInfo,
@@ -13,63 +13,31 @@ from class_file import ClassFile, MethodInfo, CodeAttribute
 if __name__ != "__main__":
     raise ImportError("This file is not intended to be imported")
 
-const_builder = ConstBuilder()
-code_s = const_builder.add_string("Code")
-main_s = const_builder.add_string("main")
-my_class_cls = const_builder.add_class("MyClass")
-printstream_cls = const_builder.add_class("java/io/PrintStream")
-object_cls = const_builder.add_class("java/lang/Object")
-system_cls = const_builder.add_class("java/lang/System")
-main_desc = const_builder.add_string("([Ljava/lang/String;)V")
-hello_world_s = const_builder.add_string(sys.argv[1])
-hello_world_const = const_builder.add_constant(StringInfo(hello_world_s))
-out_field = const_builder.add_constant(
-    FieldRefInfo(
-        system_cls,
-        const_builder.add_constant(
-            NameAndTypeInfo(
-                const_builder.add_string("out"),
-                const_builder.add_string("Ljava/io/PrintStream;"),
-            )
-        ),
-    )
-)
-
-println_method = const_builder.add_constant(
-    MethodRefInfo(
-        printstream_cls,
-        const_builder.add_constant(
-            NameAndTypeInfo(
-                const_builder.add_string("println"),
-                const_builder.add_string("(Ljava/lang/String;)V"),
-            )
-        ),
-    )
-)
+pool = ConstPool()
 
 my_class = ClassFile(
-    constants=const_builder.constants,
-    this_class=my_class_cls,
-    super_class=object_cls,
+    constants=pool,
+    this_class=pool.class_["MyClass"],
+    super_class=pool.class_["java/lang/Object"],
     interfaces=[],
     methods=[
         MethodInfo(
-            name_idx=main_s,
-            descriptor_idx=main_desc,
+            name_idx=pool.utf["main"],
+            descriptor_idx=pool.utf["([Ljava/lang/String;)V"],
             attributes=[
                 CodeAttribute(
                     max_stack=2,
                     max_locals=1,
                     code=(
                         b"\xb2"
-                        + pack(">H", out_field)
+                        + pack(">H", pool.field_ref["java/lang/System", "out", "Ljava/io/PrintStream;"])
                         + b"\x12"
-                        + pack(">B", hello_world_const)
+                        + pack(">B", pool.str[sys.argv[1]])
                         + b"\xb6"
-                        + pack(">H", println_method)
+                        + pack(">H", pool.method_ref["java/io/PrintStream", "println", "(Ljava/lang/String;)V"])
                         + b"\xb1"
                     ),
-                    name_idx=code_s,
+                    name_idx=pool.utf['Code'],
                 )
             ],
         )

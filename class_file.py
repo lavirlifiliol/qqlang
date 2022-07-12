@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from struct import pack
-from constant import ConstantIndex, Constant
+from constant import ConstantIndex, ConstPool
 
 
 @dataclass
@@ -59,7 +59,7 @@ class ClassFile:
     MAGIC = 0xCAFEBABE
     MINOR_VERSION = 0x0001
     MAJOR_VERSION = 52
-    constants: list[Constant]
+    constants: ConstPool
     ACCESS_FLAGS = 0x1001  # public
     this_class: ConstantIndex
     super_class: ConstantIndex

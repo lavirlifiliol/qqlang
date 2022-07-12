@@ -1,4 +1,6 @@
 import abc
+from collections import UserDict
+from collections.abc import Mapping
 from struct import pack
 
 ConstantIndex = int
@@ -126,18 +128,52 @@ class MethodTypeInfo(Constant):
         return b"\x10" + pack(">H", self.type_str)
 
 
-class ConstBuilder:
+class DefaultDict(UserDict):
+    def __init__(self, default_factory):
+        super().__init__()
+        self.default_factory = default_factory
+    def __missing__(self, key):
+        value = self.default_factory(key)
+        self[key] = value
+        return value
+
+
+class ConstPool:
     def __init__(self) -> None:
         self.constants = []
+        self.utf = DefaultDict(self._add_utf)
+        self.str = DefaultDict(self._add_str)
+        self.class_ = DefaultDict(self._add_class)
+        self.nametype = DefaultDict(self._add_nametype)
+        self.method_ref = DefaultDict(self._add_method_ref)
+        self.field_ref = DefaultDict(self._add_field_ref)
         self.idx = 1
 
-    def add_constant(self, constant: Constant) -> ConstantIndex:
+    def __len__(self) -> int:
+        return self.idx - self.constants[-1].entries
+
+    def __iter__(self) -> int:
+        yield from self.constants
+    
+    def _add_constant(self, constant: Constant) -> ConstantIndex:
         self.constants.append(constant)
         self.idx += constant.entries
         return self.idx - constant.entries
 
-    def add_string(self, s: str) -> ConstantIndex:
-        return self.add_constant(Utf8Info(s))
+    def _add_utf(self, s: str) -> ConstantIndex:
+        return self._add_constant(Utf8Info(s))
 
-    def add_class(self, class_name: str) -> ConstantIndex:
-        return self.add_constant(ClassInfo(self.add_constant(Utf8Info(class_name))))
+    def _add_str(self, s: str) -> ConstantIndex:
+        return self._add_constant(StringInfo(self.utf[s]))
+
+    def _add_class(self, class_name: str) -> ConstantIndex:
+        return self._add_constant(ClassInfo(self.utf[class_name]))
+    
+    def _add_nametype(self, nametype: tuple[str, str]) -> ConstantIndex:
+        return self._add_constant(NameAndTypeInfo(self.utf[nametype[0]], self.utf[nametype[1]]))
+
+    def _add_method_ref(self, params: tuple[str, str, str]) -> ConstantIndex:
+        return self._add_constant(MethodRefInfo(self.class_[params[0]], self.nametype[params[1], params[2]]))
+
+    def _add_field_ref(self, params: tuple[str, str, str]) -> ConstantIndex:
+        return self._add_constant(FieldRefInfo(self.class_[params[0]], self.nametype[params[1], params[2]]))
