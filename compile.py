@@ -5,6 +5,7 @@ from constant import (
     ConstPool,
 )
 from class_file import ClassFile, MethodInfo, CodeAttribute
+import codegen as c
 
 if __name__ != "__main__":
     raise ImportError("This file is not intended to be imported")
@@ -24,26 +25,21 @@ my_class = ClassFile(
                 CodeAttribute(
                     max_stack=2,
                     max_locals=1,
-                    code=(
-                        b"\xb2"
-                        + pack(
-                            ">H",
+                    code=c.code(
+                        c.GetStatic(
                             pool.field_ref[
                                 "java/lang/System", "out", "Ljava/io/PrintStream;"
-                            ],
-                        )
-                        + b"\x12"
-                        + pack(">B", pool.str[sys.argv[1]])
-                        + b"\xb6"
-                        + pack(
-                            ">H",
+                            ]
+                        ),
+                        c.Ldc(pool.str[sys.argv[1]]),
+                        c.InvokeVirtual(
                             pool.method_ref[
                                 "java/io/PrintStream",
                                 "println",
                                 "(Ljava/lang/String;)V",
-                            ],
-                        )
-                        + b"\xb1"
+                            ]
+                        ),
+                        c.Return(),
                     ),
                     name_idx=pool.utf["Code"],
                 )
