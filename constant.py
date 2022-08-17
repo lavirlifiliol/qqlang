@@ -150,6 +150,7 @@ class ConstPool:
         self.nametype = DefaultDict(self._add_nametype)
         self.method_ref = DefaultDict(self._add_method_ref)
         self.field_ref = DefaultDict(self._add_field_ref)
+        self.long = DefaultDict(self._add_long)
         self.idx = 1
 
     def __len__(self) -> int:
@@ -162,6 +163,9 @@ class ConstPool:
         self.constants.append(constant)
         self.idx += constant.entries
         return self.idx - constant.entries
+
+    def _add_long(self, value: int) -> ConstantIndex:
+        return self._add_constant(LongInfo(value))
 
     def _add_utf(self, s: str) -> ConstantIndex:
         return self._add_constant(Utf8Info(s))

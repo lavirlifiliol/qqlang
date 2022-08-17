@@ -35,16 +35,13 @@ class MethodInfo:
 
     @property
     def b(self) -> bytes:
-        return (
-            pack(
-                ">HHHH",
-                self.ACCESS_FLAGS,
-                self.name_idx,
-                self.descriptor_idx,
-                len(self.attributes),
-            )
-            + b"".join(a.b for a in self.attributes)
-        )
+        return pack(
+            ">HHHH",
+            self.ACCESS_FLAGS,
+            self.name_idx,
+            self.descriptor_idx,
+            len(self.attributes),
+        ) + b"".join(a.b for a in self.attributes)
 
 
 # TODO FieldInfo

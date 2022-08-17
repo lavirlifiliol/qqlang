@@ -63,5 +63,32 @@ class Return(Insn):
         return b"\xb1"
 
 
+class Ldc2(Insn):
+    def __init__(self, c: ConstantIndex) -> None:
+        self.c = c
+
+    @property
+    def b(self) -> bytes:
+        return b"\x14" + pack(">H", self.c)
+
+
+class LAdd(Insn):
+    @property
+    def b(self) -> bytes:
+        return b"\x61"
+
+
+class Swap(Insn):
+    @property
+    def b(self) -> bytes:
+        return b"\x5f"
+
+
+class Dup(Insn):
+    @property
+    def b(self) -> bytes:
+        return b"\x59"
+
+
 def code(*args: Insn) -> bytes:
     return b"".join(arg.b for arg in args)
